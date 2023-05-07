@@ -27,10 +27,12 @@ opponent.score = {}
 opponent.score.value = 0
 opponent.score.x = (maxWidth + 75) / 2
 opponent.score.y = player.score.y
+local goUp = false
+local goDown = false
 
 -- Ball
 local ball = {}
-local ball_speed = -5
+local ballSpeed = -5
 ball.radius = 10
 ball.x = (maxWidth + ball.radius) / 2
 ball.y = (maxHeight + ball.radius) / 2
@@ -39,7 +41,8 @@ ball.speed.x = 0
 ball.speed.y = 0
 
 function love.load()
-    ball.speed.x = ball_speed
+    ball.speed.x = ballSpeed
+    goUp = true; -- Set an initial direction
 end
 
 function love.update()
@@ -50,6 +53,9 @@ function love.update()
     if love.keyboard.isDown("down") and player.y < maxHeight - player.height then
         player.y = player.y + player.speed
     end
+
+    -- Opponent movement
+    MoveOpponent()
 
     -- Ball movement
     ball.x = ball.x + ball.speed.x
@@ -66,33 +72,31 @@ function love.update()
         end
 
         -- No collision on the X axis since the player can only move up and down
-        ball.speed.x = -ball_speed
+        ball.speed.x = -ballSpeed
     end
 
     -- Collision with opponent
     if ball.x + ball.radius == opponent.x and ball.y >= opponent.y and ball.y <= opponent.y + opponent.height then
-        ball.speed.x = ball_speed
+        ball.speed.x = ballSpeed
     end
 
     -- Collision of ball with walls
     -- Top wall
     if ball.y == 0 + ball.radius then
-        ball.speed.y = -ball_speed
+        ball.speed.y = -ballSpeed
     end
     -- Bottom wall
     if ball.y == maxHeight - ball.radius then
-        ball.speed.y = ball_speed
+        ball.speed.y = ballSpeed
     end
     -- Left wall
     if ball.x == 0 + ball.radius then
-        ball.speed.x = -ball_speed
-
+        ball.speed.x = -ballSpeed
         opponent.score.value = opponent.score.value + point
     end
     -- Right wall
     if ball.x == maxWidth - ball.radius then
-        ball.speed.x = ball_speed
-
+        ball.speed.x = ballSpeed
         player.score.value = player.score.value + point
     end
 end
@@ -108,8 +112,25 @@ function love.draw()
     -- Separator
     love.graphics.rectangle("fill", maxWidth / 2, 0, 1, maxHeight)
 
-    --Score
+    -- Score
     love.graphics.print(tostring(player.score.value), player.score.x, player.score.y)
     love.graphics.print(tostring(opponent.score.value), opponent.score.x, opponent.score.y)
     love.graphics.setFont(gameFont)
+end
+
+function MoveOpponent()
+    if opponent.y == 0 then
+        goUp = false
+        goDown = true
+    elseif opponent.y == maxHeight - opponent.height then
+        goUp = true
+        goDown = false
+    end
+
+    if (goUp) then
+        opponent.y = opponent.y - opponent.speed
+    end
+    if (goDown) then
+        opponent.y = opponent.y + opponent.speed
+    end
 end
